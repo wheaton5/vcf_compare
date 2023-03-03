@@ -68,7 +68,7 @@ def pair_iter(i1, i2, key):
             v2 = None
 
 output = open(args.output, 'w')
-output.write(",".join(["chrom","pos", "in_vcf","in_gt","qual","ref","alt","is_indel","depth","AD", "PS_vcf", "PS_gt", "CC", "MS"])+"\n")
+output.write(",".join(["chrom","pos", "in_vcf","in_gt","qual","ref","alt","is_indel","depth","AD", "PS_vcf", "PS_gt", "CC1", "CC2", "MS1", "MS2"])+"\n")
 for chrom in fasta.keys():
     try:
         vcfin.fetch(chrom)
