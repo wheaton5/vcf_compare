@@ -68,7 +68,7 @@ def pair_iter(i1, i2, key):
             v2 = None
 
 output = open(args.output, 'w')
-output.write(",".join(["chrom","pos", "in_vcf","in_gt","qual","ref","alt","is_indel","depth","AD"])+"\n")
+output.write(",".join(["chrom","pos", "in_vcf","in_gt","qual","ref","alt","is_indel","depth","AD", "PS_vcf", "PS_gt", "CC", "MS"])+"\n")
 for chrom in fasta.keys():
     try:
         vcfin.fetch(chrom)
@@ -81,6 +81,7 @@ for chrom in fasta.keys():
         print("failed to fetch in gt",chrom)
         continue
     
+    
     for (vcf_rec, gt_rec) in pair_iter(vcfin, ground_truth, lambda x: x.POS):
         print(vcf_rec, gt_rec)
         pos = "0"
@@ -92,6 +93,11 @@ for chrom in fasta.keys():
         is_indel = "0"
         depth = "-1"
         AD = "-1"
+        phase_set = "-1"
+        cluster_center1 = "-1"
+        cluster_center2 = "-1"
+        molecule_support1 = "-1"
+        molecule_support2 = "-1"
         if vcf_rec:
             pos = str(vcf_rec.POS)
             in_vcf = "1"
@@ -102,6 +108,16 @@ for chrom in fasta.keys():
                 is_indel = "1"
             depth = str(vcf_rec.samples[0]["DP"])
             AD = str(vcf_rec.samples[0]["AD"][1]) 
+            if "PS" in vcf_rec.samples[0]:
+                phase_set = str(vcf_rec.samples[0]["PS"])
+            if "CC" in vcf_rec.samples[0]:
+                toks = vcf_rec.samples[0]["CC"]
+                cluster_center1 = str(toks[0])
+                cluster_center2 = str(toks[1])
+            if "MS" in vcf_rec.samples[0]:
+                toks = vcf_rec.samples[0]["MS"]
+                molecule_support1 = str(toks[0])
+                molecule_support2 = str(toks[1])
         else:
             depth = 0
             for read in bam.fetch(chrom, pos, pos+1):
@@ -113,7 +129,12 @@ for chrom in fasta.keys():
             in_gt = "1"
             ref = str(vcf_rec.REF)
             alt = str(vcf_rec.ALT[0])
+            gt_phase_set = "-1"
             if gt_rec.is_indel():
                 is_indel = "1"
+            if "PS" in gt_rec.samples[0]:
+                gt_phase_set = gt_rec.samples[0]["PS"]
 
-        output.write(",".join([chrom,pos,in_vcf,in_gt,qual,ref,alt,is_indel,depth,AD])+"\n")
+
+        output.write(",".join([chrom,pos,in_vcf,in_gt,qual,ref,alt,is_indel,depth,AD,phase_set,gt_phase_set,
+            cluster_center1, cluster_center2, molecule_support1, molecule_support2])+"\n")
